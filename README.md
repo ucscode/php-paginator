@@ -35,7 +35,7 @@ The small template renders the page number as a select list to save space:
 
 Install with composer: 
 
-    composer require "jasongrimes/paginator:~1.0"
+    composer require ucscode/paginator
 
 ## Basic usage
 
@@ -45,7 +45,7 @@ Here's a quick example using the defaults:
     
     require '../vendor/autoload.php';
 
-    use JasonGrimes\Paginator;
+    use Ucscode\Paginator\Paginator;
 
     $totalItems = 1000;
     $itemsPerPage = 50;
@@ -97,7 +97,7 @@ To render it with one of the other example templates, just make sure the variabl
 
     $paginator = new Paginator($totalItems, $itemsPerPage, $currentPage, $urlPattern);
     
-    include '../vendor/jasongrimes/paginator/examples/pagerSmall.phtml';
+    include 'path/to/paginator/examples/pagerSmall.phtml';
     
 <img src="examples/screenshot-small-mid.png" width="220"><br/>
 
@@ -167,4 +167,6 @@ By default, no more than 10 pages are shown, including the first and last page, 
 To change the default number of pages:
 
     $paginator->setMaxPagesToShow(5);
+    $paginator->setNextPageText('Custom Next Text');
+    $paginator->setPrevPageText('Custom Prev Text')
 
