@@ -1,15 +1,16 @@
 <?php
 
-namespace JasonGrimes\Tests;
+namespace Ucscode\Paginator\Tests;
 
-use JasonGrimes\Paginator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Ucscode\Paginator\Paginator;
 
-class PaginatorTest extends \PHPUnit_Framework_TestCase
+class PaginatorTest extends TestCase
 {
-    /** @var Paginator */
-    protected $paginator;
+    protected Paginator $paginator;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $numItems = 100;
         $itemsPerPage = 10;
@@ -61,9 +62,7 @@ class PaginatorTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($this->paginator->getPrevUrl());
     }
 
-    /**
-     * @dataProvider getTestData
-     */
+    #[DataProvider('getTestData')]
     public function testGetPages($numPages, $currentPage, $maxPages, $expected)
     {
         $paginator = new Paginator($numPages, 1, $currentPage);
@@ -75,7 +74,7 @@ class PaginatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $pageNums);
     }
 
-    public function getTestData()
+    public static function getTestData()
     {
         return array(
             // num pages, current page, max pages to show, expected pagination
@@ -96,9 +95,7 @@ class PaginatorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    /**
-     * @dataProvider getRangeData
-     */
+    #[DataProvider('getRangeData')]
     public function testGetItemRanges($numItems, $itemsPerPage, $currentPage, $expectedFirst, $expectedLast)
     {
         $paginator = new Paginator($numItems, $itemsPerPage, $currentPage);
@@ -109,7 +106,7 @@ class PaginatorTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function getRangeData()
+    public static function getRangeData()
     {
         return array(
             // $numItems, $itemsPerPage, $currentPage, $expectedFirstItem, $expectedLastItem

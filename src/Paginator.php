@@ -1,19 +1,23 @@
 <?php
 
-namespace JasonGrimes;
+namespace Ucscode\Paginator;
+
+use DOMElement;
+use DOMText;
+use Ucscode\DOMElement\DOMElementNameInterface;
 
 class Paginator
 {
-    const NUM_PLACEHOLDER = '(:num)';
+    public const NUM_PLACEHOLDER = '(:num)';
 
-    protected $totalItems;
-    protected $numPages;
-    protected $itemsPerPage;
-    protected $currentPage;
-    protected $urlPattern;
-    protected $maxPagesToShow = 10;
-    protected $previousText = 'Previous';
-    protected $nextText = 'Next';
+    protected int $totalItems;
+    protected int $numPages;
+    protected int $itemsPerPage;
+    protected int $currentPage;
+    protected string $urlPattern;
+    protected int $maxPagesToShow = 10;
+    protected string $previousText = 'Previous';
+    protected string $nextText = 'Next';
 
     /**
      * @param int $totalItems The total number of items.
@@ -21,7 +25,7 @@ class Paginator
      * @param int $currentPage The current page number.
      * @param string $urlPattern A URL for each page, with (:num) as a placeholder for the page number. Ex. '/foo/page/(:num)'
      */
-    public function __construct($totalItems, $itemsPerPage, $currentPage, $urlPattern = '')
+    public function __construct(int $totalItems, int $itemsPerPage, int $currentPage, string $urlPattern = '')
     {
         $this->totalItems = $totalItems;
         $this->itemsPerPage = $itemsPerPage;
@@ -31,27 +35,28 @@ class Paginator
         $this->updateNumPages();
     }
 
-    protected function updateNumPages()
+    public function __toString()
     {
-        $this->numPages = ($this->itemsPerPage == 0 ? 0 : (int) ceil($this->totalItems/$this->itemsPerPage));
+        return $this->toHtml();
     }
 
     /**
      * @param int $maxPagesToShow
      * @throws \InvalidArgumentException if $maxPagesToShow is less than 3.
      */
-    public function setMaxPagesToShow($maxPagesToShow)
+    public function setMaxPagesToShow(int $maxPagesToShow): static
     {
         if ($maxPagesToShow < 3) {
             throw new \InvalidArgumentException('maxPagesToShow cannot be less than 3.');
         }
         $this->maxPagesToShow = $maxPagesToShow;
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getMaxPagesToShow()
+    public function getMaxPagesToShow(): int
     {
         return $this->maxPagesToShow;
     }
@@ -59,15 +64,16 @@ class Paginator
     /**
      * @param int $currentPage
      */
-    public function setCurrentPage($currentPage)
+    public function setCurrentPage(int $currentPage): static
     {
         $this->currentPage = $currentPage;
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getCurrentPage()
+    public function getCurrentPage(): int
     {
         return $this->currentPage;
     }
@@ -75,10 +81,11 @@ class Paginator
     /**
      * @param int $itemsPerPage
      */
-    public function setItemsPerPage($itemsPerPage)
+    public function setItemsPerPage(int $itemsPerPage): static
     {
         $this->itemsPerPage = $itemsPerPage;
         $this->updateNumPages();
+        return $this;
     }
 
     /**
@@ -92,7 +99,7 @@ class Paginator
     /**
      * @param int $totalItems
      */
-    public function setTotalItems($totalItems)
+    public function setTotalItems(int $totalItems)
     {
         $this->totalItems = $totalItems;
         $this->updateNumPages();
@@ -101,7 +108,7 @@ class Paginator
     /**
      * @return int
      */
-    public function getTotalItems()
+    public function getTotalItems(): int
     {
         return $this->totalItems;
     }
@@ -109,7 +116,7 @@ class Paginator
     /**
      * @return int
      */
-    public function getNumPages()
+    public function getNumPages(): int
     {
         return $this->numPages;
     }
@@ -117,15 +124,16 @@ class Paginator
     /**
      * @param string $urlPattern
      */
-    public function setUrlPattern($urlPattern)
+    public function setUrlPattern(string $urlPattern): static
     {
         $this->urlPattern = $urlPattern;
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getUrlPattern()
+    public function getUrlPattern(): string
     {
         return $this->urlPattern;
     }
@@ -134,12 +142,12 @@ class Paginator
      * @param int $pageNum
      * @return string
      */
-    public function getPageUrl($pageNum)
+    public function getPageUrl(int $pageNum): string
     {
         return str_replace(self::NUM_PLACEHOLDER, $pageNum, $this->urlPattern);
     }
 
-    public function getNextPage()
+    public function getNextPage(): ?int
     {
         if ($this->currentPage < $this->numPages) {
             return $this->currentPage + 1;
@@ -148,7 +156,7 @@ class Paginator
         return null;
     }
 
-    public function getPrevPage()
+    public function getPrevPage(): ?int
     {
         if ($this->currentPage > 1) {
             return $this->currentPage - 1;
@@ -157,7 +165,7 @@ class Paginator
         return null;
     }
 
-    public function getNextUrl()
+    public function getNextUrl(): ?string
     {
         if (!$this->getNextPage()) {
             return null;
@@ -169,7 +177,7 @@ class Paginator
     /**
      * @return string|null
      */
-    public function getPrevUrl()
+    public function getPrevUrl(): ?string
     {
         if (!$this->getPrevPage()) {
             return null;
@@ -194,7 +202,7 @@ class Paginator
      *
      * @return array
      */
-    public function getPages()
+    public function getPages(): array
     {
         $pages = array();
 
@@ -216,10 +224,14 @@ class Paginator
             } else {
                 $slidingStart = $this->currentPage - $numAdjacents;
             }
-            if ($slidingStart < 2) $slidingStart = 2;
+            if ($slidingStart < 2) {
+                $slidingStart = 2;
+            }
 
             $slidingEnd = $slidingStart + $this->maxPagesToShow - 3;
-            if ($slidingEnd >= $this->numPages) $slidingEnd = $this->numPages - 1;
+            if ($slidingEnd >= $this->numPages) {
+                $slidingEnd = $this->numPages - 1;
+            }
 
             // Build the list of pages.
             $pages[] = $this->createPage(1, $this->currentPage == 1);
@@ -239,6 +251,68 @@ class Paginator
         return $pages;
     }
 
+    /**
+     * Render an HTML pagination control.
+     *
+     * @return string
+     */
+    public function toHtml(): string
+    {
+        return $this->getElement()->C14N();
+    }
+
+    public function getCurrentPageFirstItem(): ?int
+    {
+        $first = ($this->currentPage - 1) * $this->itemsPerPage + 1;
+
+        if ($first > $this->totalItems) {
+            return null;
+        }
+
+        return $first;
+    }
+
+    public function getCurrentPageLastItem(): ?int
+    {
+        $first = $this->getCurrentPageFirstItem();
+        if ($first === null) {
+            return null;
+        }
+
+        $last = $first + $this->itemsPerPage - 1;
+        if ($last > $this->totalItems) {
+            return $this->totalItems;
+        }
+
+        return $last;
+    }
+
+    public function setPreviousText($text): static
+    {
+        $this->previousText = $text;
+        return $this;
+    }
+
+    public function getPreviousText(): ?string
+    {
+        return $this->previousText;
+    }
+
+    public function setNextText($text): static
+    {
+        $this->nextText = $text;
+        return $this;
+    }    
+
+    public function getNextText(): ?string
+    {
+        return $this->nextText;
+    }
+    
+    protected function updateNumPages()
+    {
+        $this->numPages = ($this->itemsPerPage == 0 ? 0 : (int) ceil($this->totalItems / $this->itemsPerPage));
+    }
 
     /**
      * Create a page data structure.
@@ -268,78 +342,54 @@ class Paginator
         );
     }
 
-    /**
-     * Render an HTML pagination control.
-     *
-     * @return string
+        /**
+     * @method getElement
      */
-    public function toHtml()
+    protected function getElement(): DOMElement
     {
-        if ($this->numPages <= 1) {
-            return '';
+        $ul = new DOMElement(DOMElementNameInterface::NODE_UL);
+        $ul->setAttribute('class', 'pagination');
+
+        $nav = new DOMElement(DOMElementNameInterface::NODE_DIV);
+        $nav->setAttribute('class', 'navigation');
+        $nav->appendChild($ul);
+
+        if($this->getPrevUrl()) {
+            $prevLiElement = $this->createListElement(null, $this->getPrevUrl(),'&laquo; ' . $this->getPreviousText());
+            $ul->appendChild($prevLiElement);
         }
 
-        $html = '<ul class="pagination">';
-        if ($this->getPrevUrl()) {
-            $html .= '<li><a href="' . htmlspecialchars($this->getPrevUrl()) . '">&laquo; '. $this->previousText .'</a></li>';
-        }
-
-        foreach ($this->getPages() as $page) {
-            if ($page['url']) {
-                $html .= '<li' . ($page['isCurrent'] ? ' class="active"' : '') . '><a href="' . htmlspecialchars($page['url']) . '">' . htmlspecialchars($page['num']) . '</a></li>';
+        foreach($this->getPages() as $page) {
+            if(!empty($page['url'])) {
+                $pagerElement = $this->createListElement($page['isCurrent'] ? 'active' : null, $page['url'], $page['num']);
             } else {
-                $html .= '<li class="disabled"><span>' . htmlspecialchars($page['num']) . '</span></li>';
-            }
-        }
+                $pagerElement = $this->createListElement('disabled', null, $page['num']);
+            };
+            $ul->appendChild($pagerElement);
+        };
 
-        if ($this->getNextUrl()) {
-            $html .= '<li><a href="' . htmlspecialchars($this->getNextUrl()) . '">'. $this->nextText .' &raquo;</a></li>';
+        if($this->getNextUrl()) {
+            $nextLiElement = $this->createListElement(null, $this->getNextUrl(), $this->getNextText() . ' &raquo;');
+            $ul->appendChild($nextLiElement);
         }
-        $html .= '</ul>';
-
-        return $html;
+        
+        return $nav;
     }
 
-    public function __toString()
+    /**
+     * @method createListElement
+     */
+    protected function createListElement(?string $class, ?string $href, string $label): DOMElement
     {
-        return $this->toHtml();
-    }
+        $node = new DOMElement(!is_null($href) ? DOMElementNameInterface::NODE_A : DOMElementNameInterface::NODE_SPAN);
+        $node->setAttribute('class', 'page-link');
+        $node->appendChild(new DOMText($label));
+        empty($href) ?: $node->setAttribute('href', $href);
 
-    public function getCurrentPageFirstItem()
-    {
-        $first = ($this->currentPage - 1) * $this->itemsPerPage + 1;
+        $li = new DOMElement(DOMElementNameInterface::NODE_LI);
+        $li->setAttribute('class', 'page-item ' . $class);
+        $li->appendChild($node);
 
-        if ($first > $this->totalItems) {
-            return null;
-        }
-
-        return $first;
-    }
-
-    public function getCurrentPageLastItem()
-    {
-        $first = $this->getCurrentPageFirstItem();
-        if ($first === null) {
-            return null;
-        }
-
-        $last = $first + $this->itemsPerPage - 1;
-        if ($last > $this->totalItems) {
-            return $this->totalItems;
-        }
-
-        return $last;
-    }
-
-    public function setPreviousText($text)
-    {
-        $this->previousText = $text;
-        return $this;
-    }
-
-    public function setNextText($text)
-    {
-        $this->nextText = $text;
-        return $this;
+        return $li;
     }
 }
