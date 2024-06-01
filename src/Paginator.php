@@ -26,7 +26,7 @@ class Paginator
      * @param int $currentPage The current page number.
      * @param string $urlPattern A URL for each page, with (:num) as a placeholder for the page number. Ex. '/foo/page/(:num)'
      */
-    public function __construct(int $totalItems, int $itemsPerPage, int $currentPage, string $urlPattern = '')
+    public function __construct(int $totalItems = 0, int $itemsPerPage = 10, int $currentPage = 1, string $urlPattern = '')
     {
         $this->totalItems = $totalItems;
         $this->itemsPerPage = $itemsPerPage;
@@ -306,13 +306,13 @@ class Paginator
     {
         $this->nextText = $text;
         return $this;
-    }    
+    }
 
     public function getNextText(): string
     {
         return $this->nextText;
     }
-    
+
     protected function updateNumPages(): void
     {
         $this->numPages = ($this->itemsPerPage == 0 ? 0 : (int) ceil($this->totalItems / $this->itemsPerPage));
@@ -352,7 +352,7 @@ class Paginator
         $ul->setAttribute('class', 'pagination');
 
         if($this->getPrevUrl()) {
-            $prevLiElement = $this->createListElement($document, null, $this->getPrevUrl(),'&laquo; ' . $this->getPreviousText());
+            $prevLiElement = $this->createListElement($document, null, $this->getPrevUrl(), '&laquo; ' . $this->getPreviousText());
             $ul->appendChild($prevLiElement);
         }
 
@@ -369,11 +369,11 @@ class Paginator
             $nextLiElement = $this->createListElement($document, null, $this->getNextUrl(), $this->getNextText() . ' &raquo;');
             $ul->appendChild($nextLiElement);
         }
-        
+
         $nav = $document->createElement(DOMElementNameInterface::NODE_DIV);
         $nav->setAttribute('class', 'navigation');
         $nav->appendChild($ul);
-        
+
         return $nav;
     }
 
