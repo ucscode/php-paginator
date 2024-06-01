@@ -2,6 +2,7 @@
 
 namespace Ucscode\Paginator\Tests;
 
+use DOMDocument;
 use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -66,6 +67,27 @@ class PaginatorTest extends TestCase
     public function testToHtml()
     {
         $this->assertIsString($this->paginator->toHtml());
+    }
+
+    public function testSetInnerHtml()
+    {
+        $paginator = new class extends Paginator 
+        {
+            public function getInnerHTML(string $html): string
+            {
+                $document = new DOMDocument();
+                $element = $document->createElement('div');
+                $this->setInnerHTML($element, $html);
+                return $document->saveHTML($element->firstChild);
+            }
+        };
+
+        $htmlTemplate = "<p>Sample: %s</p>";
+
+        $this->assertSame(
+            sprintf($htmlTemplate, '&amp; &#xAB;'),
+            $paginator->getInnerHTML(sprintf($htmlTemplate, '& &laquo;'))
+        );
     }
 
     #[DataProvider('getTestData')]

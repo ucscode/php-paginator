@@ -17,8 +17,8 @@ class Paginator
     protected int $currentPage;
     protected string $urlPattern;
     protected int $maxPagesToShow = 10;
-    protected string $previousText = 'Previous';
-    protected string $nextText = 'Next';
+    protected string $previousText = '&laquo; Previous';
+    protected string $nextText = 'Next &raquo;';
 
     /**
      * @param int $totalItems The total number of items.
@@ -352,7 +352,7 @@ class Paginator
         $ul->setAttribute('class', 'pagination');
 
         if($this->getPrevUrl()) {
-            $prevLiElement = $this->createListElement($document, null, $this->getPrevUrl(), '&laquo; ' . $this->getPreviousText());
+            $prevLiElement = $this->createListElement($document, null, $this->getPrevUrl(), $this->getPreviousText());
             $ul->appendChild($prevLiElement);
         }
 
@@ -366,7 +366,7 @@ class Paginator
         };
 
         if($this->getNextUrl()) {
-            $nextLiElement = $this->createListElement($document, null, $this->getNextUrl(), $this->getNextText() . ' &raquo;');
+            $nextLiElement = $this->createListElement($document, null, $this->getNextUrl(), $this->getNextText());
             $ul->appendChild($nextLiElement);
         }
 
@@ -384,7 +384,7 @@ class Paginator
     {
         $node = $document->createElement(!is_null($href) ? DOMElementNameInterface::NODE_A : DOMElementNameInterface::NODE_SPAN);
         $node->setAttribute('class', 'page-link');
-        $node->appendChild(new DOMText($label));
+        $this->setInnerHTML($node, $label);
         empty($href) ? null : $node->setAttribute('href', $href);
 
         $li = $document->createElement(DOMElementNameInterface::NODE_LI);
@@ -393,4 +393,36 @@ class Paginator
 
         return $li;
     }
+
+    /**
+     * Set the innerHTML of a DOMElement
+     */
+    protected function setInnerHTML(DOMElement $element, string $html)
+    {
+        // Create a new temporary DOMDocument to load the HTML content
+        $tempDoc = new \DOMDocument();
+        
+        // Suppress errors related to invalid HTML structure
+        libxml_use_internal_errors(true);
+        
+        // Load the HTML content
+        $tempDoc->loadHTML(sprintf('<div>%s</div>', $html), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        
+        // Clear libxml errors
+        libxml_clear_errors();
+        
+        // Import the loaded HTML into the original document
+        // The importedFragment is literally a DIVElement
+        $importedFragment = $element->ownerDocument->importNode($tempDoc->documentElement, true);
+
+        // Remove all existing children of the element
+        while ($element->firstChild) {
+            $element->removeChild($element->firstChild);
+        }
+        
+        // Append the imported fragment
+        foreach ($importedFragment->childNodes as $child) {
+            $element->appendChild($child->cloneNode(true));
+        }
+    } 
 }
