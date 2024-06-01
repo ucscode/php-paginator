@@ -2,6 +2,7 @@
 
 namespace Ucscode\Paginator\Tests;
 
+use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Ucscode\Paginator\Paginator;
@@ -60,6 +61,11 @@ class PaginatorTest extends TestCase
         // Returns null if on the first page.
         $this->paginator->setCurrentPage(1);
         $this->assertNull($this->paginator->getPrevUrl());
+    }
+
+    public function testToHtml()
+    {
+        $this->assertIsString($this->paginator->toHtml());
     }
 
     #[DataProvider('getTestData')]

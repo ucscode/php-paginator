@@ -2,6 +2,7 @@
 
 namespace Ucscode\Paginator;
 
+use DOMDocument;
 use DOMElement;
 use DOMText;
 use Ucscode\DOMElement\DOMElementNameInterface;
@@ -91,7 +92,7 @@ class Paginator
     /**
      * @return int
      */
-    public function getItemsPerPage()
+    public function getItemsPerPage(): int
     {
         return $this->itemsPerPage;
     }
@@ -99,10 +100,11 @@ class Paginator
     /**
      * @param int $totalItems
      */
-    public function setTotalItems(int $totalItems)
+    public function setTotalItems(int $totalItems): static
     {
         $this->totalItems = $totalItems;
         $this->updateNumPages();
+        return $this;
     }
 
     /**
@@ -258,7 +260,9 @@ class Paginator
      */
     public function toHtml(): string
     {
-        return $this->getElement()->C14N();
+        $document = new DOMDocument('1.0', 'UTF-8');
+        $element = $this->getElement($document);
+        return $document->saveHTML($element);
     }
 
     public function getCurrentPageFirstItem(): ?int
@@ -287,29 +291,29 @@ class Paginator
         return $last;
     }
 
-    public function setPreviousText($text): static
+    public function setPreviousText(string $text): static
     {
         $this->previousText = $text;
         return $this;
     }
 
-    public function getPreviousText(): ?string
+    public function getPreviousText(): string
     {
         return $this->previousText;
     }
 
-    public function setNextText($text): static
+    public function setNextText(string $text): static
     {
         $this->nextText = $text;
         return $this;
     }    
 
-    public function getNextText(): ?string
+    public function getNextText(): string
     {
         return $this->nextText;
     }
     
-    protected function updateNumPages()
+    protected function updateNumPages(): void
     {
         $this->numPages = ($this->itemsPerPage == 0 ? 0 : (int) ceil($this->totalItems / $this->itemsPerPage));
     }
@@ -321,7 +325,7 @@ class Paginator
      * @param bool $isCurrent
      * @return Array
      */
-    protected function createPage($pageNum, $isCurrent = false)
+    protected function createPage(int $pageNum, bool $isCurrent = false): array
     {
         return array(
             'num' => $pageNum,
@@ -333,7 +337,7 @@ class Paginator
     /**
      * @return array
      */
-    protected function createPageEllipsis()
+    protected function createPageEllipsis(): array
     {
         return array(
             'num' => '...',
@@ -342,36 +346,33 @@ class Paginator
         );
     }
 
-        /**
-     * @method getElement
-     */
-    protected function getElement(): DOMElement
+    protected function getElement(DOMDocument $document): DOMElement
     {
-        $ul = new DOMElement(DOMElementNameInterface::NODE_UL);
+        $ul = $document->createElement(DOMElementNameInterface::NODE_UL);
         $ul->setAttribute('class', 'pagination');
 
-        $nav = new DOMElement(DOMElementNameInterface::NODE_DIV);
-        $nav->setAttribute('class', 'navigation');
-        $nav->appendChild($ul);
-
         if($this->getPrevUrl()) {
-            $prevLiElement = $this->createListElement(null, $this->getPrevUrl(),'&laquo; ' . $this->getPreviousText());
+            $prevLiElement = $this->createListElement($document, null, $this->getPrevUrl(),'&laquo; ' . $this->getPreviousText());
             $ul->appendChild($prevLiElement);
         }
 
         foreach($this->getPages() as $page) {
             if(!empty($page['url'])) {
-                $pagerElement = $this->createListElement($page['isCurrent'] ? 'active' : null, $page['url'], $page['num']);
+                $pagerElement = $this->createListElement($document, $page['isCurrent'] ? 'active' : null, $page['url'], $page['num']);
             } else {
-                $pagerElement = $this->createListElement('disabled', null, $page['num']);
+                $pagerElement = $this->createListElement($document, 'disabled', null, $page['num']);
             };
             $ul->appendChild($pagerElement);
         };
 
         if($this->getNextUrl()) {
-            $nextLiElement = $this->createListElement(null, $this->getNextUrl(), $this->getNextText() . ' &raquo;');
+            $nextLiElement = $this->createListElement($document, null, $this->getNextUrl(), $this->getNextText() . ' &raquo;');
             $ul->appendChild($nextLiElement);
         }
+        
+        $nav = $document->createElement(DOMElementNameInterface::NODE_DIV);
+        $nav->setAttribute('class', 'navigation');
+        $nav->appendChild($ul);
         
         return $nav;
     }
@@ -379,14 +380,14 @@ class Paginator
     /**
      * @method createListElement
      */
-    protected function createListElement(?string $class, ?string $href, string $label): DOMElement
+    protected function createListElement(DOMDocument $document, ?string $class, ?string $href, string $label): DOMElement
     {
-        $node = new DOMElement(!is_null($href) ? DOMElementNameInterface::NODE_A : DOMElementNameInterface::NODE_SPAN);
+        $node = $document->createElement(!is_null($href) ? DOMElementNameInterface::NODE_A : DOMElementNameInterface::NODE_SPAN);
         $node->setAttribute('class', 'page-link');
         $node->appendChild(new DOMText($label));
         empty($href) ?: $node->setAttribute('href', $href);
 
-        $li = new DOMElement(DOMElementNameInterface::NODE_LI);
+        $li = $document->createElement(DOMElementNameInterface::NODE_LI);
         $li->setAttribute('class', 'page-item ' . $class);
         $li->appendChild($node);
 
