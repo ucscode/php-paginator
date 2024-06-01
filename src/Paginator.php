@@ -385,7 +385,7 @@ class Paginator
         $node = $document->createElement(!is_null($href) ? DOMElementNameInterface::NODE_A : DOMElementNameInterface::NODE_SPAN);
         $node->setAttribute('class', 'page-link');
         $node->appendChild(new DOMText($label));
-        empty($href) ?: $node->setAttribute('href', $href);
+        empty($href) ? null : $node->setAttribute('href', $href);
 
         $li = $document->createElement(DOMElementNameInterface::NODE_LI);
         $li->setAttribute('class', 'page-item ' . $class);

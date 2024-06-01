@@ -4,3 +4,4 @@ composer.lock
 *.swo
 *~
 /.php-cs-fixer.cache
+/.phpunit.result.cache
